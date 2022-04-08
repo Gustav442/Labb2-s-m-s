@@ -1,7 +1,5 @@
 package se.iths.entity;
 
-
-import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
@@ -9,9 +7,8 @@ import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Entity
-public class Student {
+public class Teacher {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,20 +25,24 @@ public class Student {
     @Email(regexp = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$")
     @Column(name = "EMAIL", nullable = false, length = 80)
     private String email;
-    private String phoneNumber;
-
-    @ManyToMany(mappedBy = "connectedStudents", cascade = CascadeType.ALL)
-    private List<Course> connectedCourses = new ArrayList<>();
 
 
-    public Student(String firstName, String lastName, String email, String phoneNumber) {
+
+@OneToMany(mappedBy = "teacher", cascade = CascadeType.PERSIST)
+    private List<Course> courses = new ArrayList<>();
+
+    public void addCourse(Course course){
+    courses.add(course);
+    course.setTeacher(this);
+}
+
+    public Teacher(String firstName, String lastName, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.phoneNumber = phoneNumber;
     }
 
-    public Student() {
+    public Teacher() {
     }
 
     public Long getId() {
@@ -75,23 +76,4 @@ public class Student {
     public void setEmail(String email) {
         this.email = email;
     }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    @JsonbTransient
-    public List<Course> getCourses() {
-        return connectedCourses;
-    }
-
-    public void setConnectedCourses(List<Course> connectedCourses) {
-        this.connectedCourses = connectedCourses;
-    }
 }
-
-

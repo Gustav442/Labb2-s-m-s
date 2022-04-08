@@ -1,6 +1,7 @@
 package se.iths.rest;
 
 
+import se.iths.entity.JSONResponse;
 import se.iths.entity.Student;
 import se.iths.service.StudentService;
 
@@ -34,12 +35,16 @@ public class StudentRest {
     @Path("")
     @GET
     public Response getAllStudents() {
-        List<Student> allStudents = studentService.getAllStudents();
-        if (allStudents.isEmpty()) {
-            throw new WebApplicationException(Response.status(Response.Status.NO_CONTENT)
-                    .entity("No students was found in database.").type(MediaType.TEXT_PLAIN_TYPE).build());
+        List<Student> students = studentService.getAllStudents();
+        if (students.isEmpty()) {
+            JSONResponse jsonResponse = new JSONResponse();
+            jsonResponse.setResponseCode("204");
+            jsonResponse.setResponseStatus("No content!");
+            jsonResponse.setResponseMessage("No students was found in database.");
+            throw new WebApplicationException(Response.status(200)
+                    .entity(jsonResponse).type(MediaType.APPLICATION_JSON_TYPE).build());
         }
-        return Response.ok(allStudents).build();
+        return Response.ok(students).build();
     }
 
     @Path("{id}")
@@ -53,11 +58,6 @@ public class StudentRest {
     @GET
     public Response findStudentById(@PathParam("id") Long id) {
         Student student = studentService.findStudentById(id);
-
-        if (student == null) {
-            throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                    .entity("Student with ID: " + id + " was not found in database.").type(MediaType.TEXT_PLAIN_TYPE).build());
-        }
         return Response.ok(student).build();
     }
 
@@ -67,8 +67,9 @@ public class StudentRest {
     @PATCH
     public Response updateFirstName(@PathParam("id") Long id,
                                     @QueryParam("firstname") String firstName) {
-        Student updatedStudent = studentService.updateFirstName(id, firstName);
-        return Response.ok(updatedStudent).build();
+        Student student = studentService.updateFirstName(id, firstName);
+        return Response.status(200)
+                .entity(student).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
     @Path("update/email/{id}")
@@ -82,12 +83,6 @@ public class StudentRest {
     @GET
     public Response getLastName(@QueryParam("lastName") String lastName){
       List<Student> students = studentService.getLastName(lastName);
-
-        if (students.isEmpty()){
-            throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                    .build());
-        }
-
       return Response.ok(students).build();
     }
 
