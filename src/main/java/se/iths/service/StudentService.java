@@ -1,23 +1,21 @@
 package se.iths.service;
 
 
+import org.apache.commons.validator.routines.EmailValidator;
 import se.iths.entity.JSONResponse;
 import se.iths.entity.Student;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
-import javax.validation.constraints.Email;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.regex.Pattern;
 
 
 @Transactional
 public class StudentService {
-
 
 
     @PersistenceContext
@@ -53,8 +51,23 @@ public class StudentService {
                 throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
                         .entity(jsonResponse).type(MediaType.APPLICATION_JSON_TYPE).build());
             }
+        }if (student.getEmail().isBlank()
+                || !isEmailValid(student.getEmail())) {
+            JSONResponse jsonResponse = new JSONResponse();
+            jsonResponse.setResponseCode("400");
+            jsonResponse.setResponseStatus("Bad request!");
+            jsonResponse.setResponseMessage("Give a correct email. Example: Correct@gmail.com");
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+                    .entity(jsonResponse).type(MediaType.APPLICATION_JSON_TYPE).build());
+        } else if (!createStudentValid(student)){
+            JSONResponse jsonResponse = new JSONResponse();
+            jsonResponse.setResponseCode("400");
+            jsonResponse.setResponseStatus("Bad request!");
+            jsonResponse.setResponseMessage("first name, last name or email can't be empty!");
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+                    .entity(jsonResponse).type(MediaType.APPLICATION_JSON_TYPE).build());
         }
-        entityManager.persist(student);
+            entityManager.persist(student);
     }
 
     public void deleteStudentById(Long id) {
@@ -88,7 +101,8 @@ public class StudentService {
                 jsonResponse.setResponseMessage("Email already exists!");
                 throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
                         .entity(jsonResponse).type(MediaType.APPLICATION_JSON_TYPE).build());
-            } else if (email.isBlank()) {
+            } else if (email.isBlank()
+                    || !isEmailValid(email)) {
                 JSONResponse jsonResponse = new JSONResponse();
                 jsonResponse.setResponseCode("400");
                 jsonResponse.setResponseStatus("Bad request!");
@@ -116,16 +130,23 @@ public class StudentService {
         return students;
 
     }
-public boolean isEmailValid(String email){
 
-    String regexp = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]";
-
-    Pattern p = Pattern.compile(regexp);
-    if(email == null){
-        return false;
+    public boolean createStudentValid(Student student) {
+        if (student.getFirstName() == null
+        || student.getLastName() == null
+        || student.getEmail() == null) {
+            return false;
+        }
+        return true;
     }
-        return p.matcher(email).matches();
-}
+
+    public boolean isEmailValid(String email) {
+
+        EmailValidator validator = EmailValidator.getInstance();
+
+        return validator.isValid(email);
+    }
+
 
 }
 

@@ -3,6 +3,7 @@ package se.iths.service;
 import se.iths.entity.Course;
 import se.iths.entity.JSONResponse;
 import se.iths.entity.Student;
+import se.iths.entity.Teacher;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -36,6 +37,14 @@ public class CoursesService {
     }
 
     public void createCoruse(Course course) {
+        if (!createCourseValid(course)){
+            JSONResponse jsonResponse = new JSONResponse();
+            jsonResponse.setResponseCode("400");
+            jsonResponse.setResponseStatus("Bad request!");
+            jsonResponse.setResponseMessage("Subject can't be empty");
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+                    .entity(jsonResponse).type(MediaType.APPLICATION_JSON_TYPE).build());
+        }
     entityManager.persist(course);
     }
 
@@ -78,8 +87,12 @@ public class CoursesService {
 
         course.addStudent(student);
         entityManager.persist(course);
+    }
 
-
-
+    public boolean createCourseValid(Course course) {
+        if (course.getSubject() == null) {
+            return false;
+        }
+        return true;
     }
 }
